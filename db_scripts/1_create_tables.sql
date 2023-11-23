@@ -48,7 +48,6 @@ create or replace table notes_have_categories (
     note_id int not null,
     category_id int not null,
 
-    primary key (note_id, category_id),
     foreign key (note_id) references notes(id),
     foreign key (category_id) references categories(id)
 );
@@ -69,6 +68,15 @@ create or replace table file_privileges (
 
     foreign key (user_id) references users(id),
     foreign key (file_id) references files(id)
+);
+------------------------------------------------------------------------------------------------------
+create or replace table files_have_categories (
+    id int auto_increment primary key,
+    file_id int not null,
+    category_id int not null,
+
+    foreign key (file_id) references files(id),
+    foreign key (category_id) references categories(id)
 );
 ------------------------------------------------------------------------------------------------------
 create or replace table notes_attach_files (
