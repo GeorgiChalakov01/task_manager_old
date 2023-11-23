@@ -84,7 +84,6 @@ create or replace table notes_attach_files (
     note_id int not null,
     file_id int not null,
 
-    primary key (note_id, file_id),
     foreign key (note_id) references notes(id),
     foreign key (file_id) references files(id)
 );
@@ -123,7 +122,6 @@ create or replace table projects_attach_notes (
     project_id int not null,
     note_id int not null,
 
-    primary key (project_id, note_id),
     foreign key (project_id) references projects(id),
     foreign key (note_id) references notes(id)
 );
@@ -151,6 +149,15 @@ create or replace table task_privileges (
 
     foreign key (user_id) references users(id),
     foreign key (task_id) references tasks(id)
+);
+------------------------------------------------------------------------------------------------------
+create or replace table tasks_attach_notes (
+    id int auto_increment primary key,
+    task_id int not null,
+    note_id int not null,
+
+    foreign key (task_id) references tasks(id),
+    foreign key (note_id) references notes(id)
 );
 ------------------------------------------------------------------------------------------------------
 create or replace table users_have_tasks_assigned (
