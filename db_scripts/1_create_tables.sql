@@ -9,7 +9,6 @@ use dwh;
 create or replace table users (
     id int auto_increment primary key,
     username varchar(20) not null unique,
-    nickname varchar(20) not null unique,
     password_hash char(60) not null,
     first_name varchar(30) not null,
     last_name varchar(30) not null,
