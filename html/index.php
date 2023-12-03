@@ -1,3 +1,3 @@
 <?php
-header("Location: login_system/auth.php");
+header("Location: signin_system/auth.php");
 exit();

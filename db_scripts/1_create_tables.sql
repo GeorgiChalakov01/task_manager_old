@@ -8,7 +8,8 @@ use dwh;
 ------------------------------------------------------------------------------------------------------
 create or replace table users (
     id int auto_increment primary key,
-    username varchar(20) not null unique,
+    email varchar(255) not null unique,
+    username varchar(30) not null unique,
     password_hash char(60) not null,
     first_name varchar(30) not null,
     last_name varchar(30) not null,
@@ -111,7 +112,6 @@ create or replace table projects_have_categories (
     project_id int not null,
     category_id int not null,
 
-    primary key (project_id, category_id),
     foreign key (project_id) references projects(id),
     foreign key (category_id) references categories(id)
 );

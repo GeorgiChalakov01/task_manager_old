@@ -45,8 +45,8 @@ Create a user.
 Do some basic validation.
 */
 create or replace procedure p_create_user (
+    in pi_email varchar(255),
     in pi_username varchar(20),
-    in pi_nickname varchar(20),
     in pi_password_hash char(60),
     in pi_first_name varchar(30),
     in pi_last_name varchar(30),
@@ -54,39 +54,25 @@ create or replace procedure p_create_user (
 )
 begin
     -- Handle empty strings.
+    SET pi_email = NULLIF(pi_email, '');
     SET pi_username = NULLIF(pi_username, '');
-    SET pi_nickname = NULLIF(pi_nickname, '');
     SET pi_password_hash = NULLIF(pi_password_hash, '');
     SET pi_first_name = NULLIF(pi_first_name, '');
     SET pi_last_name = NULLIF(pi_last_name, '');
 
 
-    -- Basic validation.
-    if pi_username = pi_nickname then
-        signal sqlstate '45000' set message_text = 'username and nickname should not be the same!';
-    end if;
-
-    if pi_username = pi_password_hash then
-        signal sqlstate '45000' set message_text = 'username and password should not be the same!';
-    end if;
-
-    if pi_nickname = pi_password_hash then
-        signal sqlstate '45000' set message_text = 'nickname and password should not be the same!';
-    end if;
-
-
     -- create the user.
     insert into users(
+        email,
         username,
-        nickname,
         password_hash,
         first_name,
         last_name,
         profile_picture
     )
     values(
+        pi_email,
         pi_username,
-        pi_nickname,
         pi_password_hash,
         pi_first_name,
         pi_last_name,
