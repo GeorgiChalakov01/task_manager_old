@@ -1,6 +1,6 @@
 <div class="topnav" id="topnav">
   <a href="home.php" class="active">Начало</a>
-  <a href="category.php">Категории</a>
+  <a href="categories.php">Категории</a>
   <a href="files.php">Файлове</a>
   <a href="notes.php">Бележки</a>
   <a href="projects.php">Проекти</a>

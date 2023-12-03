@@ -183,6 +183,26 @@ end;
 $$
 ------------------------------------------------------------------------------------------------------
 /*
+Delete a category.
+*/
+create or replace procedure p_delete_category (
+    in pi_category_id INT,
+    in pi_user_id INT
+)
+begin
+    -- Check if the owner tries to edit the category.
+    if pi_user_id = (select owner_id from categories where id = pi_category_id) then
+        delete from 
+            categories 
+        where
+            id = pi_category_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the category!';
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
 Private procedure used to grant privileges on creation to the creator.
 To grant privileges to a different user use p_grant_access
 */

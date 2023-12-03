@@ -8,3 +8,10 @@
     font-size: 17px;
     float: right;
 }
+
+.status {
+    color: green;
+}
+.error {
+    color: red;
+}

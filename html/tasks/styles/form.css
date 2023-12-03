@@ -64,11 +64,3 @@
 .form input.button:hover{
   background: #006653;
 }
-
-
-.status {
-    color: green;
-}
-.error {
-    color: red;
-}
