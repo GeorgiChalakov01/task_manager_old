@@ -24,7 +24,7 @@
 }
 
 .content {
-    padding: 0 18px;
+    padding: 0;
     display: none;
     overflow: hidden;
     background-color: #f1f1f1;
@@ -40,5 +40,5 @@ img {
 }
 
 table, th, td {
-  padding: 15px; /* Adjust this value to increase or decrease the space in the cells */
+  padding: 5px; /* Adjust this value to increase or decrease the space in the cells */
 }

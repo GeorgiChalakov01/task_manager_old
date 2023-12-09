@@ -54,9 +54,11 @@ create or replace table notes_have_categories (
 ------------------------------------------------------------------------------------------------------
 create or replace table files (
     id int auto_increment primary key,
-    file blob not null,
+    name varchar(255) not null,
+    extension varchar(25),
+    full_path varchar(4096) not null,
     title varchar(50) not null,
-    description varchar(15000),
+    description varchar(10000),
     uploaded_on datetime not null
 );
 ------------------------------------------------------------------------------------------------------

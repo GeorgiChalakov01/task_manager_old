@@ -3,7 +3,7 @@
 session_start();
 
 
-if(!isset($_SESSION['id'])){
+if(!isset($_SESSION['id']) and !isset($_POST["submit"])) {
     header('location: ../signin_system/auth.php');
     exit();
 }

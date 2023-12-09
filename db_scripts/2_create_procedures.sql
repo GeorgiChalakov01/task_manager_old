@@ -135,7 +135,7 @@ BEGIN
     DECLARE table_name VARCHAR(500);
 
     SET table_name = CONCAT(pi_object_type, 's_have_categories');
-    SET query = CONCAT('INSERT INTO ', table_name, ' VALUES (?, ?)');
+    SET query = CONCAT('INSERT INTO ', table_name, '(', pi_object_type, '_id, category_id) VALUES (?, ?)');
 
     PREPARE stmt FROM query;
     EXECUTE stmt USING pi_object_id, pi_category_id;
@@ -278,26 +278,33 @@ end;
 $$
 ------------------------------------------------------------------------------------------------------
 /*
-Upload a file and give privileges to the creator.
+Upload a file and give privileges to the creator. Add it to a category.
 */
 create or replace procedure p_upload_file (
-    in pi_file blob,
+    in pi_user_id int,
+    in pi_full_path varchar(4096),
+    in pi_name varchar(255),
+    in pi_extension varchar(25),
     in pi_title varchar(50),
     in pi_description varchar(15000),
-    in pi_user_id int
+    in pi_category_id int
 )
 begin
     declare file_id int;
 
     -- Upload the file.
     insert into files (
-        file,
+        full_path,
+        name,
+        extension,
         title,
         description,
         uploaded_on
     )
     values (
-        pi_file,
+        pi_full_path,
+        pi_name,
+        pi_extension,
         pi_title,
         pi_description,
         now()
@@ -309,6 +316,8 @@ begin
     call _p_grant_access(pi_user_id, file_id, 'v', 'file');
     call _p_grant_access(pi_user_id, file_id, 'e', 'file');
     call _p_grant_access(pi_user_id, file_id, 'o', 'file');
+
+    call p_append_category(pi_category_id, file_id, 'file');
 end;
 $$
 ------------------------------------------------------------------------------------------------------

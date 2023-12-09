@@ -3,12 +3,10 @@
 session_start();
 
 
-if(!isset($_POST['submit'])){
-    header('location: category.php');
+if(!isset($_SESSION['id']) and !isset($_POST["submit"])) {
+    header('location: ../signin_system/auth.php');
     exit();
 }
-
-
 
 require_once '../db/dbh.inc.php';
 require_once 'common_php/functions.inc.php';
@@ -26,4 +24,5 @@ if($category_id == '-1'){
     exit();
 } else {
     edit_category($con, $category_id, $user_id, $name, $background_color, $text_color);
+    exit();
 }

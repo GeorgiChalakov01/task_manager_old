@@ -11,14 +11,9 @@
 
     <a href="category_edit.php" class="link_button">Добави</a>
 
-    <br>
-    <br>
-    <br>
-    <p class="status"><?php if(isset($_GET['status']))echo $_GET["status"];?></p>
-    <p class="error"><?php if(isset($_GET['error']))echo $_GET["error"];?></p>
-    <br>
-    <br>
-    <br>
+    <?php include 'common_php/statuserror.php'?>
+
+
     <?php
     require_once '../db/dbh.inc.php';
     require_once 'common_php/functions.inc.php';
