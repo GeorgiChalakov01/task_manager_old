@@ -203,3 +203,82 @@ function upload_file($con, $user_id, $file_destination, $file_name, $file_extens
         exit();
     }
 }
+
+function create_note($con, $user_id, $title, $description, $category_id) {
+    $query = "call p_create_note(?, ?, ?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: note_edit.php?error=$error_message");
+        exit();
+    }
+    
+    mysqli_stmt_bind_param($stmt, "issi", $user_id, $title, $description, $category_id);
+    
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_close($stmt);
+
+        $status_message = urlencode("Успешно създадена бележка!");
+        header("location: notes.php?status=$status_message");
+        exit();
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: note_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function get_notes($con, $user_id) {
+    $query = "
+        select 
+            n.id, 
+            n.title, 
+            n.description, 
+            n.created_on,
+
+            nc.category_id
+        from 
+            notes n inner join notes_have_categories nc on nc.note_id = n.id
+        where 
+            n.id in (
+                select
+                    note_id
+                from
+                    note_privileges
+                where
+                    user_id = ? and
+                    privilege = 'v'
+            )
+        order by
+            n.id desc;
+    ";
+    $stmt = mysqli_stmt_init($con);
+
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: home.php?error=$error_message");
+        exit();
+    }
+
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+
+    if(mysqli_stmt_execute($stmt)){
+        $result = mysqli_stmt_get_result($stmt);
+        mysqli_stmt_close($stmt);
+
+        // load the $rows in an array and 
+        $files = array();
+        while($row = mysqli_fetch_assoc($result)){
+            $files[] = $row;
+        }
+        return $files;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: category_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}

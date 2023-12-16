@@ -239,11 +239,13 @@ $$
 Create a note.
 Handle empty strings.
 Add View, Edit and Own privileges to the creator.
+Append a category.
 */
 create or replace procedure p_create_note (
     in pi_user_id int,
     in pi_title varchar(50),
-    in pi_description varchar(15000)
+    in pi_description varchar(15000),
+    in pi_category_id int
 )
 begin
     declare note_id int;
@@ -271,9 +273,13 @@ begin
     set note_id = last_insert_id();
     end;
 
+    -- give access to the creator
     call _p_grant_access(pi_user_id, note_id, 'v', 'note');
     call _p_grant_access(pi_user_id, note_id, 'e', 'note');
     call _p_grant_access(pi_user_id, note_id, 'o', 'note');
+
+    -- append the categroy provided
+    call p_append_category(pi_category_id, note_id, 'note');
 end;
 $$
 ------------------------------------------------------------------------------------------------------

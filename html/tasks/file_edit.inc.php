@@ -12,7 +12,7 @@ require_once 'common_php/functions.inc.php';
 $file = $_FILES['file'];
 $file_info = pathinfo($_FILES['file']['name']);
 
-$file_id = $_GET['file_id'];
+$file_id = $_POST['id'];
 $category_id = $_POST['category'];
 $title = $_POST['title'];
 $description = $_POST['description'];

@@ -9,9 +9,64 @@
     float: right;
 }
 
+.controls {
+    float: right;
+}
+
 .status {
     color: green;
 }
 .error {
     color: red;
+}
+
+
+.collapsable_container {
+    width: 100%;
+}
+
+.collapsable_container .file {
+    display: flex;
+    flex-direction: row;
+}
+
+.collapsable_container .collapsible {
+    background-color: #777;
+    color: white;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+}
+
+.collapsable_container .active {
+    background-color: #555;
+}
+
+.collapsable_container .content {
+    padding: 0;
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
+.collapsable_container th, td {
+    padding: 2px;
+}
+
+.collapsable_container td {
+    vertical-align: top;
+    text-align: left;
+}
+
+.splitword {
+    overflow-wrap: anywhere;
+}
+
+.collapsable_container img {
+    width: 150px;
+    height: 150px;
 }
