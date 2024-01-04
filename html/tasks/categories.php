@@ -35,10 +35,10 @@
             else
                 echo '
         <a href="
-            category_edit.php?id=' . $row['id'] . '
-            &name=' . urlencode($row['name']) . '
-            &text_color=' . urlencode($row['text_color']) . '
-            &background_color=' . urlencode($row['background_color']) . '"
+            category_edit.php?id=' . $row['id'] . 
+                             '&name=' . urlencode($row['name']) . 
+                             '&text_color=' . urlencode($row['text_color']) . 
+                             '&background_color=' . urlencode($row['background_color']) . '"
         >
             <div 
                 class="category" 
