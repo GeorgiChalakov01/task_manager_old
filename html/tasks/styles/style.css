@@ -1,10 +1,20 @@
+.body {
+    margin: 5px;
+}
+
+.link {
+    text-decoration: none;
+    color: black;
+}
+
 .link_button {
+    text-decoration: none;
     display: block;
     color: #f2f2f2;
     background-color: #777;
+    border: 1px solid black;
     text-align: center;
     padding: 14px 16px;
-    text-decoration: none;
     font-size: 17px;
     float: right;
 }
@@ -28,6 +38,7 @@
 .collapsable_container .file {
     display: flex;
     flex-direction: row;
+    padding: 5px;
 }
 
 .collapsable_container .collapsible {
@@ -47,15 +58,14 @@
 }
 
 .collapsable_container .content {
-    padding: 0;
+    padding: 5px;
     display: none;
     overflow: hidden;
     background-color: #f1f1f1;
+    min-height: 30px;
+    border: 1px solid black;
 }
 
-.collapsable_container th, td {
-    padding: 2px;
-}
 
 .collapsable_container td {
     vertical-align: top;
@@ -69,4 +79,89 @@
 .collapsable_container img {
     width: 150px;
     height: 150px;
+}
+
+.element {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.task_container {
+    border: 1px solid; 
+    overflow-x: hidden; 
+    overflow-y: auto;
+}
+
+.task_container .task {
+    display: flex;
+    padding: 7px;
+}
+
+.task_container .task a {
+    text-decoration: none;
+    color: black;
+}
+
+.delete {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    height: 100%;
+    padding-left: 5px;
+    padding-right: 5px;
+    background-color: red;
+    color: black;
+    border: 1px solid black;
+    border-radius: 0 10px 10px 0;
+    line-height: 350%;
+    text-decoration: none;
+    font-size: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category, .file {
+    position: relative;
+    border: 3px solid black;
+    border-radius: 10px;
+    padding-left: 15px;
+}
+
+.category a {
+    text-decoration: none;
+}
+
+
+.inputfile {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+.inputfile + label {
+    font-size: 1.25em;
+    font-weight: 700;
+    color: white;
+    background-color: black;
+    display: inline-block;
+}
+
+.inputfile:focus + label,
+.inputfile + label:hover {
+    background-color: red;
+}
+
+.inputfile + label {
+	cursor: pointer; /* "hand" cursor */
+}
+
+.inputfile:focus + label {
+	outline: 1px dotted #000;
+	outline: -webkit-focus-ring-color auto 5px;
 }

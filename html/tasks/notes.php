@@ -12,6 +12,7 @@
         <a href="note_archive.php" class="controls link_button">Архив</a>
 
         <?php include 'common_php/statuserror.php'?>
+        <br><br><br><br><br>
 
 
         <?php
@@ -24,20 +25,19 @@
         foreach($categories as $category){
             echo '
             <div class="collapsable_container">
-                    <button type="button" class="collapsible">' . $category['name'] . '</button>
-                    <div class="content">
-            ';
+            <button type="button" class="collapsible">' . $category['name'] . '</button>
+            <div class="content">';
+            
             foreach($rows as $row) {                
-                if(in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
-                    $source_image = $row['full_path'];
-                }
                 if($row['category_id'] == $category['id']) {
                     echo '
-                        <div class="note">
+                    <a href="note_edit.php?id=' . $row['id'] . '&title=' . $row['title'] . '&description=' . $row['description'] . '&category_id=' . $row['category_id'] . '" class="link">
+                        <div class="element">
                             <h2>' . $row['title'] . '</h2>
                             <p>' . nl2br($row['description']) . '</p>
                             <p>' . substr($row['created_on'], 0, 16) . '</p>
-                        </div><br>';
+                        </div>
+                    </a><br>';
                     }
                 }
             echo '

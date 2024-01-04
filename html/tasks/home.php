@@ -9,6 +9,6 @@
     <?php include 'common_php/body.php'?>
     <?php include 'common_php/statuserror.php'?>
 
-    <h1>Statistics:</h1>
+    <h1>Статистики:</h1>
 </body>
 </html>

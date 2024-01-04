@@ -14,14 +14,13 @@ $note_id = $_POST['id'];
 $category_id = $_POST['category'];
 $title = $_POST['title'];
 $description = $_POST['description'];
-
-
+$deadline = $_POST['deadline'];
 
 
 if($note_id == '-1'){
-    create_note($con, $_SESSION['id'], $title, $description, $category_id);
+    create_project($con, $_SESSION['id'], $title, $description, $deadline, $category_id);
     exit();
 } else {
-    edit_note($con, $note_id, $_SESSION['id'], $title, $description, $category_id);
+    // edit_project($con, $_SESSION['id'], $title, $description, $category_id);
     exit();
 }

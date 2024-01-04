@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?php if(isset($_GET['id'])) echo 'Промяна на Бележка'; else echo 'Добавяне на Бележка';?></title>
+    <title><?php if(isset($_GET['id'])) echo 'Промяна на Проект'; else echo 'Добавяне на Проект';?></title>
     <?php include '../PWA/headers.php'?>
     <?php include 'common_php/head.php'?>
     <link rel="stylesheet" href="styles/form.css">
@@ -12,11 +12,11 @@
     <div class="content">
         <div class="container">
             <div class="form">
-                <header><?php if(isset($_GET['id'])) echo 'Промяна на Бележка'; else echo 'Добавяне на Бележка';?></header>
+                <header><?php if(isset($_GET['id'])) echo 'Промяна на Проект'; else echo 'Добавяне на Проект';?></header>
                 <p class="status"><?php if(isset($_GET['status']))echo $_GET["status"];?></p>
                 <p class="error"><?php if(isset($_GET['error']))echo $_GET["error"];?></p>
         
-                <form action="note_edit.inc.php" method="post">
+                <form action="project_edit.inc.php" method="post">
                     <input 
                         type="hidden" 
                         name="id"
@@ -41,13 +41,25 @@
                         >
                     
                     <lable for="description">Съдържание</lable>
-                    <br><textarea name="description"
-                    >
-                        <?php 
+                    <br><textarea
+                        name="description"
+                        value=
+                            "<?php 
                             if(isset($_GET['description']))
                                 echo $_GET['description'];
-                        ?>
-                    </textarea><br><br>
+                            ?>"
+                    ></textarea><br><br>
+
+                    <lable for="deadline">Краен Срок</lable>
+                    <input 
+                        type="datetime-local"
+                        name="deadline" 
+                        value=
+                            "<?php 
+                            if(isset($_GET['deadline']))
+                                echo $_GET['deadline'];
+                            ?>"
+                    >
 
                     <lable for="category">Категория</lable>
                     <select name="category">

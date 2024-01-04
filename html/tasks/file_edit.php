@@ -41,47 +41,56 @@
                         >
                     
                     <lable for="description">Описание</lable>
-                    <br><textarea
-                        name="description"
-                        value=
-                            "<?php 
-                            if(isset($_GET['description']))
-                                echo $_GET['description'];
-                            ?>"
-                    ></textarea><br><br>
+                    <br>
+                    <textarea name="description"><?php 
+                        if(isset($_GET['description']))
+                            echo trim(urldecode($_GET['description']));
+                    ?></textarea><br><br>
+
                     
-                    <lable for="file"></lable>
+                    <lable for="file">Файл</lable>
                     <input 
                         type="file" 
                         name="file"
-                        value=
-                            "<?php 
-                            if(isset($_GET['file']))
-                                echo $_GET['file'];
-                            ?>"
                     >
 
-                    <lable for="category">Категория</lable>
-                    <select name="category">
-                        <option value="-1"> Неподредени </option>
+                    <lable for="categories"> Категории</lable>
+                    <div class="category_container">
                         <?php
-                        require_once '../db/dbh.inc.php';
-                        require_once 'common_php/functions.inc.php';
-
-                        $categories = get_categories($con, $_SESSION['id']);
-                        
-                        foreach($categories as $category) {
-                            $selected = ($category['id'] == $_GET['category_id']) ? ' selected' : '';
-                            echo '
-                            <option value="' . $category['id'] .'"' . 
-                                $selected . 
-                            '>' .
-                                $category['name'] . 
-                            '</option>';
-                        }
+                            require_once '../db/dbh.inc.php';
+                            require_once 'common_php/functions.inc.php';
+    
+                            $categories = get_categories($con, $_SESSION['id']);
+                            foreach ($categories as $category) {
+                                if(isset($_GET['id'])) {
+                                    $appended_categories = get_appended_categories($con, $_SESSION['id'], $_GET['id'], 'file');
+                                    $checked = '';
+                                    foreach($appended_categories as $appended_category) {
+                                        if($appended_category['id'] == $category['id'])
+                                            $checked = 'checked';
+                                    }
+                                }
+                                else if($category['id'] == get_uncategorized_id($con, $_SESSION['id'])) {
+                                    $checked = 'checked';
+                                }
+                                else {
+                                    $checked = '';
+                                }
+                                
+                                echo '
+                                <div class="category_option">
+                                    <input 
+                                        type="checkbox" 
+                                        name="category_'. $category['id'] . '" ' . 
+                                        $checked .'
+                                    >&nbsp;' . 
+                                    $category['name'] . '
+                                </div>'
+                                ;
+                                $category_number++;
+                            }
                         ?>
-                    </select>
-                    <p>Права...</p>
+                    </div>
                     <input type="submit" class="button" value="Въведи" name="submit">
                 </form>
             </div>      

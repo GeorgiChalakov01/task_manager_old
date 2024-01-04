@@ -12,6 +12,7 @@
         <a href="file_archive.php" class="controls link_button">Архив</a>
 
         <?php include 'common_php/statuserror.php'?>
+        <br><br><br><br><br>
 
 
         <?php
@@ -40,10 +41,12 @@
                 if($row['category_id'] == $category['id']) {
                     echo '
                         <div class="file">
-                            <img src="' . $source_image . '">
+                            <a href="file_edit.php?id=' . $row['id'] . '&title=' . $row['title'] . '&description=' . urlencode($row['description']) . '&filename=' . $filename . '">
+                                <img src="' . $source_image . '">
+                            </a>
                             <table>
                                 <tr>
-                                    <td>Файл</td>
+                                    <td>Файл:</td>
                                     <td class="splitword">
                                         <a 
                                             href="' . $row['full_path'] . '" 
@@ -54,18 +57,24 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Заглавие</td>
+                                    <td>Заглавие:</td>
                                     <td class="splitword">' . $row['title'] . '</td>
                                 </tr>
                                 <tr>
-                                    <td>Описание</td>
+                                    <td>Описание:</td>
                                     <td class="splitword">' . nl2br($row['description']) . '</td>
                                 </tr>
                                 <tr>
-                                    <td>Дата</td>
+                                    <td>Качен:</td>
                                     <td class="splitword">' . substr($row['uploaded_on'], 0, 16) . '</td>
                                 </tr>
                             </table>
+                            <a
+                                class="delete" 
+                                href="file_delete.inc.php?id=' . $row['id'] . '&file_path=' . $row['full_path'] . '"
+                            >
+                                X
+                            </a>
                         </div>
                         <br>
                         ';
