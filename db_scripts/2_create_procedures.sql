@@ -22,12 +22,12 @@ BEGIN
     SET @table_name = CONCAT(pi_object_type, '_privileges');
     SET @query = CONCAT('
         SELECT 
-            COUNT(*) > 0 
+            COUNT(*) > 0 INTO @has_privileges
         FROM 
             ', @table_name, ' 
         WHERE 
-            user_id = ? AND 
-            object_id = ? AND 
+            user_id = ? AND ',
+            pi_object_type ,'_id = ? AND 
             privilege = ?;
     ');
 
@@ -36,7 +36,7 @@ BEGIN
     EXECUTE stmt USING @user_id, @object_id, @privilege;
     DEALLOCATE PREPARE stmt;
 
-    SELECT @has_privileges INTO po_has_privileges;
+    SET po_has_privileges = @has_privileges;
 END;
 $$
 ------------------------------------------------------------------------------------------------------
@@ -53,6 +53,8 @@ create or replace procedure p_create_user (
     in pi_profile_picture blob
 )
 begin
+    declare user_id int;
+
     -- Handle empty strings.
     SET pi_email = NULLIF(pi_email, '');
     SET pi_username = NULLIF(pi_username, '');
@@ -78,6 +80,10 @@ begin
         pi_last_name,
         pi_profile_picture
     );
+
+    set user_id = last_insert_id();
+
+    call p_create_category(user_id, 'Неподредени', '#04AA6D', '#FFFFFF');
 end;
 $$
 ------------------------------------------------------------------------------------------------------
@@ -126,6 +132,7 @@ $$
 Append a category to an object, regardless of the object type.
 */
 CREATE or replace PROCEDURE p_append_category (
+    IN pi_user_id INT,
     IN pi_category_id INT,
     IN pi_object_id INT,
     IN pi_object_type VARCHAR(50)
@@ -133,13 +140,65 @@ CREATE or replace PROCEDURE p_append_category (
 BEGIN
     DECLARE query VARCHAR(500);
     DECLARE table_name VARCHAR(500);
+    DECLARE num_rows INT;
 
-    SET table_name = CONCAT(pi_object_type, 's_have_categories');
-    SET query = CONCAT('INSERT INTO ', table_name, '(', pi_object_type, '_id, category_id) VALUES (?, ?)');
+    -- Check if a user tries to edit the file.
+    declare is_viewer boolean;
 
-    PREPARE stmt FROM query;
-    EXECUTE stmt USING pi_object_id, pi_category_id;
-    DEALLOCATE PREPARE stmt;
+    call p_check_privileges(pi_user_id, pi_object_id, 'v', pi_object_type, is_viewer);
+
+    if is_viewer then 
+        -- Prepare the statement to check for duplicates
+        SET @table_name = CONCAT(pi_object_type, 's_have_categories');
+        SET @query = CONCAT('SELECT COUNT(*) INTO @num_rows FROM ', @table_name, ' WHERE ', pi_object_type, '_id = ? AND category_id = ?');
+        PREPARE stmt FROM @query;
+        EXECUTE stmt USING pi_object_id, pi_category_id;
+        DEALLOCATE PREPARE stmt;
+
+        -- Get the result into a local variable
+        SET num_rows = @num_rows;
+
+        -- If no duplicates, then insert
+        IF num_rows = 0 THEN
+            SET query = CONCAT('INSERT INTO ', @table_name, '(', pi_object_type, '_id, category_id) VALUES (?, ?)');
+            PREPARE stmt FROM query;
+            EXECUTE stmt USING pi_object_id, pi_category_id;
+            DEALLOCATE PREPARE stmt;
+        END IF;
+    else
+        signal sqlstate '45000' set message_text = 'user does not have privileges to the resource!';
+    end if;
+END;
+$$
+------------------------------------------------------------------------------------------------------
+/*
+Unappend a category to an object, regardless of the object type.
+*/
+CREATE or replace PROCEDURE p_unappend_category (
+    IN pi_user_id INT,
+    IN pi_category_id INT,
+    IN pi_object_id INT,
+    IN pi_object_type VARCHAR(50)
+)
+BEGIN
+    DECLARE query VARCHAR(500);
+    DECLARE table_name VARCHAR(500);
+    DECLARE num_rows INT;
+
+    -- Check if a viewer tries to edit the file.
+    declare is_viewer boolean;
+
+    call p_check_privileges(pi_user_id, pi_object_id, 'v', pi_object_type, is_viewer);
+
+    if is_viewer then 
+        SET @table_name = CONCAT(pi_object_type, 's_have_categories');
+        SET query = CONCAT('delete from ', @table_name, ' where category_id = ? and ', pi_object_type, '_id = ?');
+        PREPARE stmt FROM query;
+        EXECUTE stmt USING pi_category_id, pi_object_id;
+        DEALLOCATE PREPARE stmt;
+    else
+        signal sqlstate '45000' set message_text = 'user does not have privileges to the resource!';
+    end if;
 END;
 $$
 ------------------------------------------------------------------------------------------------------
@@ -239,18 +298,14 @@ $$
 Create a note.
 Handle empty strings.
 Add View, Edit and Own privileges to the creator.
-Append a category.
 */
 create or replace procedure p_create_note (
     in pi_user_id int,
     in pi_title varchar(50),
     in pi_description varchar(15000),
-    in pi_category_id int
+    out po_note_id int
 )
 begin
-    declare note_id int;
-
-
     -- Handle empty strings.
     if pi_title = '' or pi_title is null then
         set pi_title = 'Untitled Note';
@@ -270,16 +325,36 @@ begin
         now()
     );
 
-    set note_id = last_insert_id();
+    set po_note_id = last_insert_id();
     end;
 
     -- give access to the creator
-    call _p_grant_access(pi_user_id, note_id, 'v', 'note');
-    call _p_grant_access(pi_user_id, note_id, 'e', 'note');
-    call _p_grant_access(pi_user_id, note_id, 'o', 'note');
-
-    -- append the categroy provided
-    call p_append_category(pi_category_id, note_id, 'note');
+    call _p_grant_access(pi_user_id, po_note_id, 'v', 'note');
+    call _p_grant_access(pi_user_id, po_note_id, 'e', 'note');
+    call _p_grant_access(pi_user_id, po_note_id, 'o', 'note');
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
+Edit a note.
+*/
+create or replace procedure p_edit_note (
+    in pi_note_id INT,
+    in pi_user_id int,
+    in pi_title varchar(50),
+    in pi_description varchar(15000)
+)
+begin
+    -- Check if the owner tries to edit the note.
+    if pi_user_id in (select user_id from note_privileges where note_id = pi_note_id and privilege = 'e') then
+        update 
+            notes 
+        set 
+            title = pi_title, 
+            description = pi_description
+        where
+            id = pi_note_id;
+    end if;
 end;
 $$
 ------------------------------------------------------------------------------------------------------
@@ -288,42 +363,158 @@ Upload a file and give privileges to the creator. Add it to a category.
 */
 create or replace procedure p_upload_file (
     in pi_user_id int,
-    in pi_full_path varchar(4096),
     in pi_name varchar(255),
     in pi_extension varchar(25),
+    in pi_full_path varchar(4096),
     in pi_title varchar(50),
     in pi_description varchar(15000),
-    in pi_category_id int
+    out po_file_id int
 )
 begin
-    declare file_id int;
+    -- Handle empty strings
+    SET pi_full_path = nullif(pi_full_path, '');
+    SET pi_name = nullif(pi_name, '');
+    SET pi_extension = nullif(pi_extension, '');
+    SET pi_title = nullif(pi_title, '');
 
     -- Upload the file.
     insert into files (
-        full_path,
         name,
         extension,
+        full_path,
         title,
         description,
         uploaded_on
     )
     values (
-        pi_full_path,
         pi_name,
         pi_extension,
+        pi_full_path,
         pi_title,
         pi_description,
         now()
     );
 
-    set file_id = last_insert_id();
+    set po_file_id = last_insert_id();
 
     -- Add the accesses.
-    call _p_grant_access(pi_user_id, file_id, 'v', 'file');
-    call _p_grant_access(pi_user_id, file_id, 'e', 'file');
-    call _p_grant_access(pi_user_id, file_id, 'o', 'file');
+    call _p_grant_access(pi_user_id, po_file_id, 'v', 'file');
+    call _p_grant_access(pi_user_id, po_file_id, 'e', 'file');
+    call _p_grant_access(pi_user_id, po_file_id, 'o', 'file');
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
+Edit a file.
+*/
+create or replace procedure p_edit_file (
+    in pi_file_id int,
+    in pi_user_id int,
+    in pi_full_path varchar(4096),
+    in pi_name varchar(255),
+    in pi_extension varchar(25),
+    in pi_title varchar(50),
+    in pi_description varchar(15000)
+)
+begin
+    -- Edit the file.
+    declare is_owner boolean;
 
-    call p_append_category(pi_category_id, file_id, 'file');
+    call p_check_privileges(pi_user_id, pi_file_id, 'o', 'file', is_owner);
+
+    set pi_name = nullif(pi_name, '');
+    set pi_extension = nullif(pi_extension, '');
+    set pi_full_path = nullif(pi_full_path, '');
+
+    set pi_name = ifnull(pi_name, (select name from files where id = pi_file_id));
+    set pi_extension = ifnull(pi_extension, (select extension from files where id = pi_file_id));
+    set pi_full_path = ifnull(pi_full_path, (select full_path from files where id = pi_file_id));
+
+    if is_owner then
+        update 
+            files
+        set 
+            full_path = pi_full_path,
+            name = pi_name,
+            extension = pi_extension,
+            title = pi_title,
+            description = pi_description
+        where 
+            id = pi_file_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the file!';
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
+Delete a file.
+*/
+create or replace procedure p_delete_file (
+    in pi_file_id INT,
+    in pi_user_id INT
+)
+begin
+    -- Check if an owner tries to edit the file.
+    declare is_owner boolean;
+    call p_check_privileges(pi_user_id, pi_file_id, 'o', 'file', is_owner);
+
+    if is_owner then
+        delete from
+            file_privileges
+        where 
+            file_id = pi_file_id;
+
+        delete from
+            files_have_categories
+        where 
+            file_id = pi_file_id;
+
+        delete from 
+            files 
+        where
+            id = pi_file_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the file!';
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
+Delete a note.
+*/
+create or replace procedure p_delete_note (
+    in pi_note_id INT,
+    in pi_user_id INT
+)
+begin
+    -- Check if an owner tries to edit the resource.
+    declare is_owner boolean;
+    call p_check_privileges(pi_user_id, pi_note_id, 'o', 'note', is_owner);
+
+    if is_owner then
+        delete from
+            note_privileges
+        where 
+            note_id = pi_note_id;
+
+        delete from
+            notes_have_categories
+        where 
+            note_id = pi_note_id;
+
+        delete from 
+            notes_attach_files
+        where
+            note_id = pi_note_id;
+
+        delete from 
+            notes 
+        where
+            id = pi_note_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the note!';
+    end if;
 end;
 $$
 ------------------------------------------------------------------------------------------------------
@@ -331,22 +522,58 @@ $$
 Attach a file to a note.
 */
 create or replace procedure p_attach_file_to_note(
+    in pi_user_id int,
     in pi_note_id int,
     in pi_file_id int
 )
 begin
-    insert into notes_attach_files values(pi_note_id, pi_file_id);
+    declare is_viewer boolean;
+    declare is_editor boolean;
+
+    call p_check_privileges(pi_user_id, pi_note_id, 'e', 'note', is_editor);
+    call p_check_privileges(pi_user_id, pi_file_id, 'v', 'file', is_viewer);
+
+    if is_editor and is_viewer then
+        insert into notes_attach_files (note_id, file_id) values(pi_note_id, pi_file_id);
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the resource!';
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
+Unattach a file to a note.
+*/
+create or replace procedure p_unattach_file_to_note(
+    in pi_user_id int,
+    in pi_note_id int,
+    in pi_file_id int
+)
+begin
+    declare is_viewer boolean;
+    declare is_editor boolean;
+
+    call p_check_privileges(pi_user_id, pi_note_id, 'e', 'note', is_editor);
+    call p_check_privileges(pi_user_id, pi_file_id, 'v', 'file', is_viewer);
+
+    if is_editor and is_viewer then
+        delete from notes_attach_files where note_id = pi_note_id and file_id = pi_file_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the resource!';
+    end if;
 end;
 $$
 ------------------------------------------------------------------------------------------------------
 /*
 Create a project and give privileges to the creator.
+Append the category given.
 */
 create or replace procedure p_create_project (
+    in pi_user_id int,
     in pi_title varchar(50),
     in pi_description varchar(15000),
     in pi_deadline datetime,
-    in pi_user_id int
+    in pi_category_id int
 )
 begin
     declare project_id int;
@@ -354,6 +581,7 @@ begin
 
     -- Handle empty strings.
     set pi_title = nullif(pi_title, '');
+    set pi_deadline = nullif(pi_deadline, '');
 
 
     -- Create the project.
@@ -375,6 +603,8 @@ begin
     call _p_grant_access(pi_user_id, project_id, 'v', 'project');
     call _p_grant_access(pi_user_id, project_id, 'e', 'project');
     call _p_grant_access(pi_user_id, project_id, 'o', 'project');
+
+    call p_append_category(pi_category_id, project_id, 'project');
 end;
 $$
 ------------------------------------------------------------------------------------------------------
