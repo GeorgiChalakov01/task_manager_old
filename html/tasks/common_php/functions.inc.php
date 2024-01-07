@@ -488,9 +488,6 @@ function unattach_file_to_note($con, $user_id, $note_id, $file_id) {
 }
 
 function get_attached_files_to_a_note ($con, $user_id, $note_id) {
-    /*
-    For now it does not check if the user owns the resources.
-    */
     $query = "
         select 
             f.id, 
@@ -504,6 +501,24 @@ function get_attached_files_to_a_note ($con, $user_id, $note_id) {
             files f
             inner join notes_attach_files naf on naf.file_id = f.id
         where 
+            naf.note_id in (
+                select
+                    note_id
+                from
+                    note_privileges
+                where
+                    user_id = ? and
+                    privilege = 'v'
+            ) and
+            naf.file_id in (
+                select
+                    file_id
+                from
+                    file_privileges
+                where
+                    user_id = ? and
+                    privilege = 'v'
+            ) and
             naf.note_id = ?
         order by
             f.name;
@@ -517,13 +532,12 @@ function get_attached_files_to_a_note ($con, $user_id, $note_id) {
         exit();
     }
 
-    mysqli_stmt_bind_param($stmt, "i", $note_id);
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $user_id, $note_id);
 
     if(mysqli_stmt_execute($stmt)){
         $result = mysqli_stmt_get_result($stmt);
         mysqli_stmt_close($stmt);
 
-        // load the $rows in an array and 
         $files = array();
         while($row = mysqli_fetch_assoc($result)){
             $files[] = $row;
