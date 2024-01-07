@@ -17,7 +17,7 @@
                 <p class="error"><?php if(isset($_GET['error']))echo $_GET["error"];?></p>
         
                 <form action="note_edit.inc.php" method="post">
-                    <input 
+                    <input
                         type="hidden" 
                         name="id"
                         value=
@@ -29,7 +29,7 @@
                             ?>"
                     >
                     
-                    <lable for="title">Заглавие</lable>
+                    <label for="title">Заглавие</label>
                     <input 
                         type="text" 
                         name="title" 
@@ -40,36 +40,74 @@
                             ?>"
                         >
                     
-                    <lable for="description">Съдържание</lable>
-                    <br><textarea name="description"
-                    >
-                        <?php 
-                            if(isset($_GET['description']))
-                                echo $_GET['description'];
-                        ?>
-                    </textarea><br><br>
+                    <label for="description">Съдържание</label>
+                    <br>
+                    <textarea name="description"><?php 
+                        if(isset($_GET['description']))
+                            echo trim(urldecode($_GET['description']));
+                    ?></textarea><br><br>
 
-                    <lable for="category">Категория</lable>
-                    <select name="category">
-                        <option value="-1"> Неподредени </option>
+                    <label for="categories"> Категории</label>
+                    <div class="category_container">
                         <?php
-                        require_once '../db/dbh.inc.php';
-                        require_once 'common_php/functions.inc.php';
+                            require_once '../db/dbh.inc.php';
+                            require_once 'common_php/functions.inc.php';
+    
+                            $categories = get_categories($con, $_SESSION['id']);
+                            foreach ($categories as $category) {
+                                if(isset($_GET['id'])) {
+                                    $appended_categories = get_appended_categories($con, $_SESSION['id'], $_GET['id'], 'note');
+                                    $checked = '';
+                                    foreach($appended_categories as $appended_category) {
+                                        if($appended_category['id'] == $category['id'])
+                                            $checked = 'checked';
+                                    }
+                                }
+                                else if($category['id'] == get_uncategorized_id($con, $_SESSION['id'])) {
+                                    $checked = 'checked';
+                                }
+                                else {
+                                    $checked = '';
+                                }
+                                
+                                echo '
+                                <div class="category_option">
+                                    <input 
+                                        type="checkbox" 
+                                        name="category_'. $category['id'] . '" ' . 
+                                        $checked .'
+                                    >&nbsp;' . 
+                                    $category['name'] . '
+                                </div>';
+                            }
+                        ?>
+                    </div><br><br>
 
-                        $categories = get_categories($con, $_SESSION['id']);
-                        
-                        foreach($categories as $category) {
-                            $selected = ($category['id'] == $_GET['category_id']) ? ' selected' : '';
+                    <label>Файлове за прикачване:</label>
+                    <div class="file_attach_container">
+                        <?php
+                        $files = get_files($con, $_SESSION['id']);
+                        $attached_files = get_attached_files_to_a_note ($con, $_SESSION['id'], $_GET['id']);
+                        $attached_file_ids = array_column($attached_files, 'id');
+
+                        foreach ($files as $file) {
+                            if(in_array($file['id'], $attached_file_ids))
+                                $checked = 'checked';
+                            else
+                                $checked = '';
+
                             echo '
-                            <option value="' . $category['id'] .'"' . 
-                                $selected . 
-                            '>' .
-                                $category['name'] . 
-                            '</option>';
+                            <div class="file_option">
+                                <input 
+                                    type="checkbox" 
+                                    name="file_'. $file['id'] . '" ' . 
+                                    $checked .'
+                                >&nbsp;' . 
+                                $file['title'] . '<br>
+                            </div>';
                         }
                         ?>
-                    </select>
-                    <p>Права...</p>
+                    </div>
                     <input type="submit" class="button" value="Въведи" name="submit">
                 </form>
             </div>      

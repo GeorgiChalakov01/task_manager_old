@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?php if(isset($_GET['id'])) echo 'Промяна на Проект'; else echo 'Добавяне на Проект';?></title>
+    <title><?php if(isset($_GET['id'])) echo 'Промяна на Проект'; else echo 'Създаване на Проект';?></title>
     <?php include '../PWA/headers.php'?>
     <?php include 'common_php/head.php'?>
     <link rel="stylesheet" href="styles/form.css">
@@ -12,7 +12,7 @@
     <div class="content">
         <div class="container">
             <div class="form">
-                <header><?php if(isset($_GET['id'])) echo 'Промяна на Проект'; else echo 'Добавяне на Проект';?></header>
+                <header><?php if(isset($_GET['id'])) echo 'Промяна на Проект'; else echo 'Създаване на Проект';?></header>
                 <p class="status"><?php if(isset($_GET['status']))echo $_GET["status"];?></p>
                 <p class="error"><?php if(isset($_GET['error']))echo $_GET["error"];?></p>
         
@@ -29,7 +29,7 @@
                             ?>"
                     >
                     
-                    <lable for="title">Заглавие</lable>
+                    <label for="title">Заглавие</label>
                     <input 
                         type="text" 
                         name="title" 
@@ -40,7 +40,7 @@
                             ?>"
                         >
                     
-                    <lable for="description">Съдържание</lable>
+                    <label for="description">Съдържание</label>
                     <br><textarea
                         name="description"
                         value=
@@ -50,7 +50,7 @@
                             ?>"
                     ></textarea><br><br>
 
-                    <lable for="deadline">Краен Срок</lable>
+                    <label for="deadline">Краен Срок</label>
                     <input 
                         type="datetime-local"
                         name="deadline" 
@@ -61,7 +61,7 @@
                             ?>"
                     >
 
-                    <lable for="category">Категория</lable>
+                    <label for="category">Категория</label>
                     <select name="category">
                         <option value="-1"> Неподредени </option>
                         <?php

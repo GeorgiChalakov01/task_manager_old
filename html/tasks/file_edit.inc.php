@@ -55,9 +55,13 @@ if($file_name) {
 
 
 if($file_id == '-1'){
-    $file_id = upload_file($con, $_SESSION['id'], $file_name, $file_extension, $file_destination, $title, $description, $category_id);
+    $file_id = upload_file($con, $_SESSION['id'], $file_name, $file_extension, $file_destination, $title, $description);
+    $status_message = urlencode("Успешно качен файл!");
+
 } else {
     edit_file($con, $file_id, $_SESSION['id'], $file_name, $file_extension, $file_destination, $title, $description);
+    $status_message = urlencode("Успешно променен файл!");
+
 }
 
 $user_categories = get_categories($con, $_SESSION['id']);
@@ -71,6 +75,5 @@ foreach($user_categories as $user_category) {
 }
 
 
-$status_message = urlencode("Успешно качен файл!");
 header("location: files.php?status=$status_message");
 exit();

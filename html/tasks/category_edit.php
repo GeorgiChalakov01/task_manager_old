@@ -28,7 +28,7 @@
                             ?>"
                     >
                     
-                    <lable for="color">Име</lable>
+                    <label for="color">Име</label>
                     <input 
                         type="text" 
                         autocomplete="off" 
@@ -40,7 +40,7 @@
                             ?>"
                         >
                     
-                    <lable for="text_color">Цвят на текста</lable>
+                    <label for="text_color">Цвят на текста</label>
                     <input 
                         type="color" 
                         name="text_color"
@@ -51,7 +51,7 @@
                             ?>"
                     >
                     
-                    <lable for="background_color">Цвят на категорията</lable>
+                    <label for="background_color">Цвят на категорията</label>
                     <input 
                         type="color" 
                         name="background_color"

@@ -109,7 +109,7 @@ function append_category($con, $user_id, $category_id, $object_id, $object_type)
     }
     else {
         $error_message = urlencode("Грешка: ");
-        header("location: category_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        header("location: home.php?error=$error_message" . mysqli_stmt_error($stmt));
         exit();
     }
 }
@@ -133,7 +133,7 @@ function unappend_category($con, $user_id, $category_id, $object_id, $object_typ
     }
     else {
         $error_message = urlencode("Грешка: ");
-        header("location: category_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        header("location: home.php?error=$error_message" . mysqli_stmt_error($stmt));
         exit();
     }
 }
@@ -251,7 +251,7 @@ function delete_category($con, $category_id, $user_id) {
     }
 }
 
-function get_files($con, $user_id) {
+function get_files_with_categories($con, $user_id) {
     $query = "
         select 
             f.id, 
@@ -265,6 +265,60 @@ function get_files($con, $user_id) {
             fc.category_id
         from 
             files f inner join files_have_categories fc on fc.file_id = f.id
+        where 
+            f.id in (
+                select
+                    file_id
+                from
+                    file_privileges
+                where
+                    user_id = ? and
+                    privilege = 'v'
+            )
+        order by
+            fc.category_id, f.id desc;
+    ";
+    $stmt = mysqli_stmt_init($con);
+
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: home.php?error=$error_message");
+        exit();
+    }
+
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+
+    if(mysqli_stmt_execute($stmt)){
+        $result = mysqli_stmt_get_result($stmt);
+        mysqli_stmt_close($stmt);
+
+        // load the $rows in an array and 
+        $files = array();
+        while($row = mysqli_fetch_assoc($result)){
+            $files[] = $row;
+        }
+        return $files;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: category_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function get_files($con, $user_id) {
+    $query = "
+        select 
+            f.id, 
+            f.full_path,
+            f.name,
+            f.extension,
+            f.title, 
+            f.description, 
+            f.uploaded_on
+        from 
+            files f
         where 
             f.id in (
                 select
@@ -302,7 +356,7 @@ function get_files($con, $user_id) {
     }
     else {
         $error_message = urlencode("Грешка: ");
-        header("location: category_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        header("location: home.php?error=$error_message" . mysqli_stmt_error($stmt));
         exit();
     }
 }
@@ -340,7 +394,7 @@ function edit_file($con, $file_id, $user_id, $file_name, $file_extension, $file_
 
     if(!mysqli_stmt_prepare($stmt, $query)) {
         $error_message = urlencode("Няма връзка с базата данни!");
-        header("location: file_edit.php?file_id=-1&error=$error_message");
+        header("location: file_edit.php?id=-1&error=$error_message");
         exit();
     }
     
@@ -353,33 +407,132 @@ function edit_file($con, $file_id, $user_id, $file_name, $file_extension, $file_
     }
     else {
         $error_message = urlencode("Грешка: ");
-        header("location: file_edit.php?file_id=-1&error=$error_message" . mysqli_stmt_error($stmt));
+        header("location: file_edit.php?id=-1&error=$error_message" . mysqli_stmt_error($stmt));
         exit();
     }
 }
 
-function create_note($con, $user_id, $title, $description, $category_id) {
-    $query = "call p_create_note(?, ?, ?, ?);";
+
+function create_note($con, $user_id, $title, $description) {
+    $query = "CALL p_create_note(?, ?, ?, @out_note_id)";
     $stmt = mysqli_stmt_init($con);
 
     if(!mysqli_stmt_prepare($stmt, $query)) {
         $error_message = urlencode("Няма връзка с базата данни!");
-        header("location: note_edit.php?error=$error_message");
+        header("location: note_edit.php?id=-1&error=$error_message");
         exit();
     }
     
-    mysqli_stmt_bind_param($stmt, "issi", $user_id, $title, $description, $category_id);
+    mysqli_stmt_bind_param($stmt, "iss", $user_id, $title, $description);
+
+    if(mysqli_stmt_execute($stmt)){
+        $result = mysqli_query($con, "SELECT @out_note_id");
+        $note_id = mysqli_fetch_assoc($result)['@out_note_id'];
+        mysqli_stmt_close($stmt);
+
+        return $note_id;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: note_edit.php?id=-1&error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function attach_file_to_note($con, $user_id, $note_id, $file_id) {
+    $query = "call p_attach_file_to_note(?, ?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: note_edit.php?id=$note_id&error=$error_message");
+        exit();
+    }
+    
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $note_id, $file_id);
     
     if(mysqli_stmt_execute($stmt)){
         mysqli_stmt_close($stmt);
 
-        $status_message = urlencode("Успешно създадена бележка!");
-        header("location: notes.php?status=$status_message");
-        exit();
+        return true;
     }
     else {
         $error_message = urlencode("Грешка: ");
         header("location: note_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function unattach_file_to_note($con, $user_id, $note_id, $file_id) {
+    $query = "call p_unattach_file_to_note(?, ?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: note_edit.php?id=$note_id&error=$error_message");
+        exit();
+    }
+    
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $note_id, $file_id);
+    
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_close($stmt);
+
+        return true;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: note_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function get_attached_files_to_a_note ($con, $user_id, $note_id) {
+    /*
+    For now it does not check if the user owns the resources.
+    */
+    $query = "
+        select 
+            f.id, 
+            f.full_path,
+            f.name,
+            f.extension,
+            f.title, 
+            f.description, 
+            f.uploaded_on
+        from 
+            files f
+            inner join notes_attach_files naf on naf.file_id = f.id
+        where 
+            naf.note_id = ?
+        order by
+            f.name;
+    ";
+    $stmt = mysqli_stmt_init($con);
+
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: home.php?error=$error_message");
+        exit();
+    }
+
+    mysqli_stmt_bind_param($stmt, "i", $note_id);
+
+    if(mysqli_stmt_execute($stmt)){
+        $result = mysqli_stmt_get_result($stmt);
+        mysqli_stmt_close($stmt);
+
+        // load the $rows in an array and 
+        $files = array();
+        while($row = mysqli_fetch_assoc($result)){
+            $files[] = $row;
+        }
+        return $files;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: home.php?error=$error_message" . mysqli_stmt_error($stmt));
         exit();
     }
 }
@@ -628,7 +781,7 @@ function get_tasks($con, $user_id, $project_id) {
 }
 
 function create_task($con, $user_id, $project_id, $title, $description, $blocker, $duration, $reminder, $deadline) {
-$query = "call p_create_task(?, ?, ?, ?, ?, ?, ?, ?);";
+    $query = "call p_create_task(?, ?, ?, ?, ?, ?, ?, ?);";
     $stmt = mysqli_stmt_init($con);
 
     if(!mysqli_stmt_prepare($stmt, $query)) {
@@ -710,8 +863,8 @@ function get_task_info($con, $user_id, $task_id) {
     }
 }
 
-function edit_note($con, $note_id, $user_id, $title, $description, $category_id) {
-    $query = "call p_edit_note(?, ?, ?, ?, ?);";
+function edit_note($con, $note_id, $user_id, $title, $description) {
+    $query = "call p_edit_note(?, ?, ?, ?);";
     $stmt = mysqli_stmt_init($con);
 
     if(!mysqli_stmt_prepare($stmt, $query)) {
@@ -720,14 +873,12 @@ function edit_note($con, $note_id, $user_id, $title, $description, $category_id)
         exit();
     }
     
-    mysqli_stmt_bind_param($stmt, "iissi", $note_id, $user_id, $title, $description, $category_id);
+    mysqli_stmt_bind_param($stmt, "iiss", $note_id, $user_id, $title, $description);
     
     if(mysqli_stmt_execute($stmt)){
         mysqli_stmt_close($stmt);
 
-        $status_message = urlencode("Успешно променена бележка!");
-        header("location: notes.php?status=$status_message");
-        exit();
+        return $note_id;
     }
     else {
         $error_message = urlencode("Грешка: ");
@@ -770,6 +921,33 @@ function delete_file($con, $file_id, $user_id, $file_path) {
     else {
         $error_message = urlencode("Грешка: ");
         header("location: files.php?error=$error_message" . urlencode(mysqli_stmt_error($stmt)));
+        exit();
+    }
+}
+
+function delete_note($con, $note_id, $user_id) {
+    $query = "call p_delete_note(?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: notes.php?error=$error_message");
+        exit();
+    }
+
+    mysqli_stmt_bind_param($stmt, "ii", $note_id, $user_id);
+
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_close($stmt);
+
+        $status_message = urlencode("Успешно изтриване на бележка!");
+        header("location: notes.php?status=$status_message");
+        exit();
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: notes.php?error=$error_message" . urlencode(mysqli_stmt_error($stmt)));
         exit();
     }
 }

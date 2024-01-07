@@ -38,7 +38,7 @@
                             ?>"
                     >
                     
-                    <lable for="title">Заглавие</lable>
+                    <label for="title">Заглавие</label>
                     <input 
                         type="text" 
                         name="title" 
@@ -49,7 +49,7 @@
                             ?>"
                         >
                     
-                    <lable for="description">Съдържание</lable>
+                    <label for="description">Съдържание</label>
                     <br><textarea
                         name="description"
                         value=
@@ -59,7 +59,7 @@
                             ?>"
                     ></textarea><br><br>
 
-                    <lable for="blocker">Блокираща</lable>
+                    <label for="blocker">Блокираща</label>
                     <br>
                     <input
                         type="checkbox"
@@ -70,7 +70,7 @@
                         ?>
                     ><br>
                                 
-                    <lable for="duration">Очаквана продължителност в минути</lable>
+                    <label for="duration">Очаквана продължителност в минути</label>
                     <input 
                         type="number"
                         name="duration"
@@ -82,7 +82,7 @@
                             ?>"
                     >
 
-                    <lable for="reminder">Създай напомняне</lable>
+                    <label for="reminder">Създай напомняне</label>
                     <br>
                     <input
                         type="checkbox"
@@ -93,7 +93,7 @@
                         ?>
                     ><br>
 
-                    <lable for="deadline">Краен Срок</lable>
+                    <label for="deadline">Краен Срок</label>
                     <input 
                         type="datetime-local"
                         name="deadline" 

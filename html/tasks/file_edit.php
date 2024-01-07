@@ -29,7 +29,7 @@
                             ?>"
                     >
                     
-                    <lable for="title">Име</lable>
+                    <label for="title">Име</label>
                     <input 
                         type="text" 
                         name="title" 
@@ -40,7 +40,7 @@
                             ?>"
                         >
                     
-                    <lable for="description">Описание</lable>
+                    <label for="description">Описание</label>
                     <br>
                     <textarea name="description"><?php 
                         if(isset($_GET['description']))
@@ -48,13 +48,13 @@
                     ?></textarea><br><br>
 
                     
-                    <lable for="file">Файл</lable>
+                    <label for="file">Файл</label>
                     <input 
                         type="file" 
                         name="file"
                     >
 
-                    <lable for="categories"> Категории</lable>
+                    <label for="categories">Категории</label>
                     <div class="category_container">
                         <?php
                             require_once '../db/dbh.inc.php';
@@ -85,8 +85,7 @@
                                         $checked .'
                                     >&nbsp;' . 
                                     $category['name'] . '
-                                </div>'
-                                ;
+                                </div>';
                                 $category_number++;
                             }
                         ?>

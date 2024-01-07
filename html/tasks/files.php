@@ -20,7 +20,7 @@
         require_once 'common_php/functions.inc.php';
 
         $categories = get_categories($con, $_SESSION['id']);
-        $rows = get_files($con, $_SESSION['id']);
+        $rows = get_files_with_categories($con, $_SESSION['id']);
 
         foreach($categories as $category){
             echo '
@@ -35,7 +35,7 @@
                 if(isset($row['extension'])) $filename = $row['name'] . '.' . $row['extension'];
                 else $filename = $row['name'];
                 
-                if(in_array($row['extension'], ['jpg', 'jpeg', 'png', 'gif', 'ico'])) {
+                if(in_array($row['extension'], ['jpg', 'jpeg', 'png', 'gif', 'ico', 'webp'])) {
                     $source_image = $row['full_path'];
                 }
                 if($row['category_id'] == $category['id']) {

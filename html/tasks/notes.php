@@ -31,13 +31,33 @@
             foreach($rows as $row) {                
                 if($row['category_id'] == $category['id']) {
                     echo '
-                    <a href="note_edit.php?id=' . $row['id'] . '&title=' . $row['title'] . '&description=' . $row['description'] . '&category_id=' . $row['category_id'] . '" class="link">
-                        <div class="element">
+                    <div class="element">
+                        <a href="note_edit.php?id=' . $row['id'] . '&title=' . $row['title'] . '&description=' . urlencode($row['description']) . '&category_id=' . $row['category_id'] . '" class="link">
                             <h2>' . $row['title'] . '</h2>
                             <p>' . nl2br($row['description']) . '</p>
                             <p>' . substr($row['created_on'], 0, 16) . '</p>
-                        </div>
-                    </a><br>';
+                        </a>';
+                    
+                    $attached_files = get_attached_files_to_a_note ($con, $_SESSION['id'], $row['id']);
+                    foreach($attached_files as $attached_file) {
+                        echo '
+                        <a style="display: flex; flex-direction: column;"
+                            href="' . $attached_file['full_path'] . '" 
+                            download="' . $attached_file['name'] . '.' . $attached_file['extension'] . '"
+                        >' . 
+                            $attached_file['name'] . '.' . $attached_file['extension'] .'
+                            <img src="' . $attached_file['full_path'] . '">
+                        </a>';
+                    }
+                    
+                    echo '
+                        <a
+                            class="delete" 
+                            href="note_delete.inc.php?id=' . $row['id'] . '"
+                        >
+                            X
+                        </a>
+                    </div><br>';
                     }
                 }
             echo '

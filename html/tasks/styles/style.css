@@ -79,9 +79,11 @@
 .collapsable_container img {
     width: 150px;
     height: 150px;
+    border-radius: 25px;
 }
 
 .element {
+    position: relative;
     border: 1px solid black;
     border-radius: 5px;
     padding: 5px;
