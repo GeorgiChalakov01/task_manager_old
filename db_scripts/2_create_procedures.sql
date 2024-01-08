@@ -601,6 +601,31 @@ end;
 $$
 ------------------------------------------------------------------------------------------------------
 /*
+Edit a project.
+*/
+create or replace procedure p_edit_project (
+    in pi_user_id int,
+    in pi_title varchar(50),
+    in pi_description varchar(15000),
+    in pi_deadline datetime,
+    in pi_project_id int
+)
+begin
+    -- Check if the owner tries to edit the project.
+    if pi_user_id in (select user_id from project_privileges where project_id = pi_project_id and privilege = 'e') then
+        update 
+            projects 
+        set 
+            title = pi_title, 
+            description = pi_description,
+            deadline = pi_deadline
+        where
+            id = pi_project_id;
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
 Mark a project as completed.
 */
 create or replace procedure p_end_project (
@@ -629,11 +654,45 @@ $$
 Attach a note to a project.
 */
 create or replace procedure p_attach_note_to_project (
+    in pi_user_id int,
     in pi_project_id int,
     in pi_note_id int
 )
 begin
-    insert into projects_attach_notes values(pi_project_id, pi_note_id);
+    declare is_viewer boolean;
+    declare is_editor boolean;
+
+    call p_check_privileges(pi_user_id, pi_project_id, 'e', 'project', is_editor);
+    call p_check_privileges(pi_user_id, pi_note_id, 'v', 'note', is_viewer);
+
+    if is_editor and is_viewer then
+        insert into projects_attach_notes (project_id, note_id) values (pi_project_id, pi_note_id);
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the resource!';
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
+Unattach a note to a project.
+*/
+create or replace procedure p_unattach_note_to_project (
+    in pi_user_id int,
+    in pi_project_id int,
+    in pi_note_id int
+)
+begin
+    declare is_viewer boolean;
+    declare is_editor boolean;
+
+    call p_check_privileges(pi_user_id, pi_project_id, 'e', 'project', is_editor);
+    call p_check_privileges(pi_user_id, pi_note_id, 'v', 'note', is_viewer);
+
+    if is_editor and is_viewer then
+        delete from projects_attach_notes where project_id = pi_project_id and note_id = pi_note_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the resource!';
+    end if;
 end;
 $$
 ------------------------------------------------------------------------------------------------------

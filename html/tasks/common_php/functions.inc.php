@@ -521,7 +521,7 @@ function get_attached_files_to_a_note ($con, $user_id, $note_id) {
             ) and
             naf.note_id = ?
         order by
-            f.name;
+            f.id;
     ";
     $stmt = mysqli_stmt_init($con);
 
@@ -552,6 +552,57 @@ function get_attached_files_to_a_note ($con, $user_id, $note_id) {
 }
 
 function get_notes($con, $user_id) {
+    $query = "
+        select 
+            n.id, 
+            n.title, 
+            n.description, 
+            n.created_on
+        from 
+            notes n
+        where 
+            n.id in (
+                select
+                    note_id
+                from
+                    note_privileges
+                where
+                    user_id = ? and
+                    privilege = 'v'
+            )
+        order by
+            n.id desc;
+    ";
+    $stmt = mysqli_stmt_init($con);
+
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: home.php?error=$error_message");
+        exit();
+    }
+
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+
+    if(mysqli_stmt_execute($stmt)){
+        $result = mysqli_stmt_get_result($stmt);
+        mysqli_stmt_close($stmt);
+
+        // load the $rows in an array and 
+        $files = array();
+        while($row = mysqli_fetch_assoc($result)){
+            $files[] = $row;
+        }
+        return $files;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: category_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function get_notes_with_categories($con, $user_id) {
     $query = "
         select 
             n.id, 
@@ -600,6 +651,114 @@ function get_notes($con, $user_id) {
     else {
         $error_message = urlencode("Грешка: ");
         header("location: category_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function get_attached_notes_to_a_project ($con, $user_id, $project_id) {
+    $query = "
+        SELECT 
+        n.id, 
+        n.title, 
+        n.description, 
+        n.created_on
+    FROM 
+        notes n
+        INNER JOIN projects_attach_notes pan ON pan.note_id = n.id
+    WHERE 
+        pan.project_id IN (
+            SELECT
+                project_id
+            FROM
+                project_privileges
+            WHERE
+                user_id = ? AND
+                privilege = 'v'
+        ) AND
+        pan.note_id IN (
+            SELECT
+                note_id
+            FROM
+                note_privileges
+            WHERE
+                user_id = ? AND
+                privilege = 'v'
+        ) AND
+        pan.project_id = ?
+    ORDER BY
+        n.id;
+    ";
+    $stmt = mysqli_stmt_init($con);
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: home.php?error=$error_message");
+        exit();
+    }
+
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $user_id, $project_id);
+
+    if(mysqli_stmt_execute($stmt)){
+        $result = mysqli_stmt_get_result($stmt);
+        mysqli_stmt_close($stmt);
+
+        $notes = array();
+        while($row = mysqli_fetch_assoc($result)){
+            $notes[] = $row;
+        }
+        return $notes;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: home.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function attach_note_to_project($con, $user_id, $project_id, $note_id) {
+    $query = "call p_attach_note_to_project(?, ?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: project_edit.php?id=$project_id&error=$error_message");
+        exit();
+    }
+    
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $project_id, $note_id);
+    
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_close($stmt);
+
+        return true;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: project_edit.php?id=$project_id&error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function unattach_note_to_project($con, $user_id, $project_id, $note_id) {
+    $query = "call p_unattach_note_to_project(?, ?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: project_edit.php?id=$project_id&error=$error_message");
+        exit();
+    }
+    
+    mysqli_stmt_bind_param($stmt, "iii", $user_id, $project_id, $note_id);
+    
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_close($stmt);
+
+        return true;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: project_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
         exit();
     }
 }
@@ -676,6 +835,29 @@ function create_project($con, $user_id, $title, $description, $deadline, $catego
         $result = mysqli_query($con, "SELECT @project_id");
         $row = mysqli_fetch_assoc($result);
         $project_id = $row['@project_id'];
+        return $project_id;
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: project_edit.php?error=$error_message" . mysqli_stmt_error($stmt));
+        exit();
+    }
+}
+
+function edit_project($con, $user_id, $title, $description, $deadline, $project_id) {
+    $query = "CALL p_edit_project(?, ?, ?, ?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: note_edit.php?error=$error_message");
+        exit();
+    }
+    
+    mysqli_stmt_bind_param($stmt, "isssi", $user_id, $title, $description, $deadline, $project_id);
+    
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_close($stmt);
         return $project_id;
     }
     else {

@@ -9,6 +9,12 @@
         <?php include 'common_php/body.php'?>
         <?php include 'common_php/statuserror.php'?>
 
+        <a href="task_finish.php" class="controls link_button">Приключване</a>
+        <?php 
+        echo '
+        <a href="project_edit.php?id=' . $_GET['id'] . '&title=' . $_GET['title'] . '&description=' . urlencode($_GET['description']) . '&deadline=' . $_GET['title'] . '" class="controls link_button">Промяна</a>';
+        ?>
+        <br><br><br>
 
         <?php
         require_once '../db/dbh.inc.php';
@@ -17,7 +23,7 @@
 
         $project = get_project_info($con, $_SESSION['id'], $_GET['id'])[0];
         echo '<h1>' . $project['title'] . '</h1>';
-        echo '<p>' . nl2br($project['description']) . '</p>';
+        echo '<p>' . nl2br(urldecode($project['description'])) . '</p>';
         ?>
 
         <br><br>

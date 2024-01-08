@@ -20,7 +20,7 @@
         require_once 'common_php/functions.inc.php';
 
         $categories = get_categories($con, $_SESSION['id']);
-        $rows = get_notes($con, $_SESSION['id']);
+        $rows = get_notes_with_categories($con, $_SESSION['id']);
 
         foreach($categories as $category){
             echo '

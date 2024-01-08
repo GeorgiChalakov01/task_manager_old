@@ -43,12 +43,10 @@
                     <label for="description">Съдържание</label>
                     <br><textarea
                         name="description"
-                        value=
-                            "<?php 
-                            if(isset($_GET['description']))
-                                echo $_GET['description'];
-                            ?>"
-                    ></textarea><br><br>
+                    ><?php 
+                        if(isset($_GET['description']))
+                            echo $_GET['description'];
+                    ?></textarea><br><br>
 
                     <label for="deadline">Краен Срок</label>
                     <input 
@@ -96,6 +94,32 @@
                             }
                         ?>
                     </div><br><br>
+
+                    <label>Бележки за прикачване:</label>
+                    <div class="attach_container">
+                        <?php
+                        $notes = get_notes($con, $_SESSION['id']);
+                        $attached_notes = get_attached_notes_to_a_project ($con, $_SESSION['id'], $_GET['id']);
+                        $attached_note_ids = array_column($attached_notes, 'id');
+
+                        foreach ($notes as $note) {
+                            if(in_array($note['id'], $attached_note_ids))
+                                $checked = 'checked';
+                            else
+                                $checked = '';
+
+                            echo '
+                            <div class="attach_option">
+                                <input 
+                                    type="checkbox" 
+                                    name="note_'. $note['id'] . '" ' . 
+                                    $checked .'
+                                >&nbsp;' . 
+                                $note['title'] . '<br>
+                            </div>';
+                        }
+                        ?>
+                    </div>
 
                     <input type="submit" class="button" value="Въведи" name="submit">
                 </form>

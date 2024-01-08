@@ -16,7 +16,7 @@
                 <p class="status"><?php if(isset($_GET['status']))echo $_GET["status"];?></p>
                 <p class="error"><?php if(isset($_GET['error']))echo $_GET["error"];?></p>
         
-                <form action="note_edit.inc.php" method="post">
+                <form action = "note_edit.inc.php" method = "post">
                     <input
                         type="hidden" 
                         name="id"
@@ -84,7 +84,7 @@
                     </div><br><br>
 
                     <label>Файлове за прикачване:</label>
-                    <div class="file_attach_container">
+                    <div class="attach_container">
                         <?php
                         $files = get_files($con, $_SESSION['id']);
                         $attached_files = get_attached_files_to_a_note ($con, $_SESSION['id'], $_GET['id']);
@@ -97,7 +97,7 @@
                                 $checked = '';
 
                             echo '
-                            <div class="file_option">
+                            <div class="attach_option">
                                 <input 
                                     type="checkbox" 
                                     name="file_'. $file['id'] . '" ' . 

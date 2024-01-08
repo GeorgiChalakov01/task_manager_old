@@ -31,8 +31,8 @@
             foreach($rows as $row) {
                 if($row['category_id'] == $category['id']) {
                     echo '
-                        <a href="project_view.php?id=' . $row['id'] . '" class="link">
-                            <div class="element">
+                        <a href="project_view.php?id=' . $row['id'] . '&title=' . $row['title'] . '&description=' . urlencode($row['description']) . '&deadline=' . $row['title'] . '" class="link">
+                            <div class="deadline">
                                 <h2>' . $row['title'] . '</h2>
                                 <p>' . nl2br($row['description']) . '</p>
                             </div><br>
