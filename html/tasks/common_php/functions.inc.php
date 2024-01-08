@@ -661,7 +661,7 @@ function get_projects($con, $user_id) {
 
 
 function create_project($con, $user_id, $title, $description, $deadline, $category_id) {
-$query = "call p_create_project(?, ?, ?, ?, ?);";
+    $query = "CALL p_create_project(?, ?, ?, ?, @project_id);";
     $stmt = mysqli_stmt_init($con);
 
     if(!mysqli_stmt_prepare($stmt, $query)) {
@@ -670,14 +670,13 @@ $query = "call p_create_project(?, ?, ?, ?, ?);";
         exit();
     }
     
-    mysqli_stmt_bind_param($stmt, "isssi", $user_id, $title, $description, $deadline, $category_id);
+    mysqli_stmt_bind_param($stmt, "isss", $user_id, $title, $description, $deadline);
     
     if(mysqli_stmt_execute($stmt)){
-        mysqli_stmt_close($stmt);
-
-        $status_message = urlencode("Успешно създаден проект!");
-        header("location: projects.php?status=$status_message");
-        exit();
+        $result = mysqli_query($con, "SELECT @project_id");
+        $row = mysqli_fetch_assoc($result);
+        $project_id = $row['@project_id'];
+        return $project_id;
     }
     else {
         $error_message = urlencode("Грешка: ");

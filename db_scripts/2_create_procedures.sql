@@ -566,23 +566,17 @@ $$
 ------------------------------------------------------------------------------------------------------
 /*
 Create a project and give privileges to the creator.
-Append the category given.
 */
 create or replace procedure p_create_project (
     in pi_user_id int,
     in pi_title varchar(50),
     in pi_description varchar(15000),
     in pi_deadline datetime,
-    in pi_category_id int
+    out po_project_id int
 )
 begin
-    declare project_id int;
-
-
     -- Handle empty strings.
     set pi_title = nullif(pi_title, '');
-    set pi_deadline = nullif(pi_deadline, '');
-
 
     -- Create the project.
     insert into projects (
@@ -598,13 +592,11 @@ begin
         pi_deadline
     );
 
-    set project_id = last_insert_id();
+    set po_project_id = last_insert_id();
 
-    call _p_grant_access(pi_user_id, project_id, 'v', 'project');
-    call _p_grant_access(pi_user_id, project_id, 'e', 'project');
-    call _p_grant_access(pi_user_id, project_id, 'o', 'project');
-
-    call p_append_category(pi_category_id, project_id, 'project');
+    call _p_grant_access(pi_user_id, po_project_id, 'v', 'project');
+    call _p_grant_access(pi_user_id, po_project_id, 'e', 'project');
+    call _p_grant_access(pi_user_id, po_project_id, 'o', 'project');
 end;
 $$
 ------------------------------------------------------------------------------------------------------
