@@ -48,6 +48,8 @@
                             "<?php 
                             if(isset($_GET['text_color']))
                                 echo $_GET['text_color'];
+                            else
+                                echo '#FFFFFF';
                             ?>"
                     >
                     
@@ -59,6 +61,8 @@
                             "<?php 
                             if(isset($_GET['background_color']))
                                 echo $_GET['background_color'];
+                            else
+                                echo '#009579';
                             ?>"
                     >
                     
