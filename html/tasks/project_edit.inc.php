@@ -13,6 +13,7 @@ require_once 'common_php/functions.inc.php';
 $project_id = $_POST['id'];
 $title = $_POST['title'];
 $description = $_POST['description'];
+$encoded_description = urlencode($descriptin);
 $deadline = str_replace("T", " ", $_POST['deadline']) . ":00";
 
 
@@ -42,10 +43,12 @@ if(empty($categories)) {
 
 if($project_id == '-1'){
     $project_id = create_project($con, $_SESSION['id'], $title, $description, $deadline, $category_id);
-    $status_message = urlencode("Успешно създаден проект!");
+    $status_message = urlencode("Успешно създаден проект!");    
+    $page = "projects.php";
 } else {
     edit_project($con, $_SESSION['id'], $title, $description, $category_id, $project_id);
     $status_message = urlencode("Успешно променен проект!");
+    $page = "project_view.php";
 }
 
 $user_categories = get_categories($con, $_SESSION['id']);
@@ -67,5 +70,5 @@ foreach($user_notes as $user_note) {
 }
 
 
-header("location: projects.php?status=$status_message");
+header("location: $page?id=$project_id&title=$title&description=$encoded_description&deadline=$deadline&status=$status_message");
 exit();
