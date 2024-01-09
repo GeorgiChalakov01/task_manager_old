@@ -29,7 +29,7 @@
                             ?>"
                     >
                     
-                    <label for="title">Заглавие</label>
+                    <label for="title">Име</label>
                     <input 
                         type="text" 
                         name="title" 
@@ -40,7 +40,7 @@
                             ?>"
                         >
                     
-                    <label for="description">Съдържание</label>
+                    <label for="description">Описание</label>
                     <br><textarea
                         name="description"
                     ><?php 
