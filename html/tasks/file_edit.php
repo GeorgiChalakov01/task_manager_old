@@ -86,7 +86,6 @@
                                     >&nbsp;' . 
                                     $category['name'] . '
                                 </div>';
-                                $category_number++;
                             }
                         ?>
                     </div>
