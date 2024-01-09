@@ -301,7 +301,7 @@ Add View, Edit and Own privileges to the creator.
 */
 create or replace procedure p_create_note (
     in pi_user_id int,
-    in pi_title varchar(50),
+    in pi_title varchar(250),
     in pi_description varchar(15000),
     out po_note_id int
 )
@@ -341,7 +341,7 @@ Edit a note.
 create or replace procedure p_edit_note (
     in pi_note_id INT,
     in pi_user_id int,
-    in pi_title varchar(50),
+    in pi_title varchar(250),
     in pi_description varchar(15000)
 )
 begin
@@ -366,7 +366,7 @@ create or replace procedure p_upload_file (
     in pi_name varchar(255),
     in pi_extension varchar(25),
     in pi_full_path varchar(4096),
-    in pi_title varchar(50),
+    in pi_title varchar(250),
     in pi_description varchar(15000),
     out po_file_id int
 )
@@ -413,7 +413,7 @@ create or replace procedure p_edit_file (
     in pi_full_path varchar(4096),
     in pi_name varchar(255),
     in pi_extension varchar(25),
-    in pi_title varchar(50),
+    in pi_title varchar(250),
     in pi_description varchar(15000)
 )
 begin
@@ -569,7 +569,7 @@ Create a project and give privileges to the creator.
 */
 create or replace procedure p_create_project (
     in pi_user_id int,
-    in pi_title varchar(50),
+    in pi_title varchar(250),
     in pi_description varchar(15000),
     in pi_deadline datetime,
     out po_project_id int
@@ -605,7 +605,7 @@ Edit a project.
 */
 create or replace procedure p_edit_project (
     in pi_user_id int,
-    in pi_title varchar(50),
+    in pi_title varchar(250),
     in pi_description varchar(15000),
     in pi_deadline datetime,
     in pi_project_id int
@@ -722,7 +722,7 @@ create or replace procedure p_create_task (
     in pi_user_id int,
     in pi_project_id int,
     in pi_blocker boolean,
-    in pi_title varchar(50),
+    in pi_title varchar(250),
     in pi_description varchar(15000),
     in pi_duration_minutes int,
     in pi_deadline datetime,
