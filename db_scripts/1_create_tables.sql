@@ -18,7 +18,7 @@ create or replace table users (
 ------------------------------------------------------------------------------------------------------
 create or replace table notes (
     id int auto_increment primary key,
-    title varchar(50) not null,
+    title varchar(250) not null,
     description varchar(15000) not null,
     created_on datetime not null
 );
@@ -57,7 +57,7 @@ create or replace table files (
     name varchar(255) not null,
     extension varchar(25),
     full_path varchar(4096) not null,
-    title varchar(50) not null,
+    title varchar(250) not null,
     description varchar(10000),
     uploaded_on datetime not null
 );
@@ -92,7 +92,7 @@ create or replace table notes_attach_files (
 ------------------------------------------------------------------------------------------------------
 create or replace table projects (
     id int auto_increment primary key,
-    title varchar(50) not null,
+    title varchar(250) not null,
     description varchar(15000),
     created_on datetime not null,
     ended_on datetime,
@@ -132,7 +132,7 @@ create or replace table tasks (
     project_id int not null,
     place int not null,
     blocker boolean not null,
-    title varchar(50) not null,
+    title varchar(250) not null,
     description varchar(15000),
     created_on datetime not null,
     completed_on datetime,
