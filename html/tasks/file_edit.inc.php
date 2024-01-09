@@ -44,7 +44,7 @@ if($file_name) {
         },
         $files_in_directory
     );
-    $next_file_number = max($file_numbers) + 1;
+    $next_file_number = empty($file_numbers) ? 1 : max($file_numbers) + 1;
     
     $file_destination = 'files/' . $next_file_number . '.' . $file_extension;
     $file_tmp_name = $_FILES['file']['tmp_name'];
