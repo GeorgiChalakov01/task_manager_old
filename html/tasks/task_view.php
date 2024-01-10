@@ -19,6 +19,7 @@
         ?>
         <a href="task_finish.php" class="controls link_button">Приключване</a>
         <a href="task_edit.php" class="controls link_button">📝</a>
+        <a href="task_delete.inc.php?id=<?php echo $_GET['id']?>" class="controls link_button">❌</a>
         <br><br><br>
         <?php
         $blocker;

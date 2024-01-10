@@ -519,6 +519,45 @@ end;
 $$
 ------------------------------------------------------------------------------------------------------
 /*
+Delete a task.
+*/
+create or replace procedure p_delete_task (
+    in pi_task_id INT,
+    in pi_user_id INT
+)
+begin
+    -- Check if an owner tries to edit the resource.
+    declare is_owner boolean;
+    call p_check_privileges(pi_user_id, pi_task_id, 'o', 'task', is_owner);
+
+    if is_owner then
+        delete from
+            task_privileges
+        where 
+            task_id = pi_task_id;
+
+        delete from 
+            tasks_attach_notes
+        where
+            task_id = pi_task_id;
+
+        delete from 
+            users_have_tasks_assigned
+        where
+            task_id = pi_task_id and
+            user_id = pi_user_id;
+
+        delete from 
+            tasks 
+        where
+            id = pi_task_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the task!';
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
 Attach a file to a note.
 */
 create or replace procedure p_attach_file_to_note(
