@@ -103,8 +103,6 @@
                                 echo $_GET['deadline'];
                             ?>"
                     >
-        
-                    <p>Права...</p>
                     <input type="submit" class="button" value="Въведи" name="submit">
                 </form>
             </div>      
