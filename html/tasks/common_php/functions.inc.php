@@ -182,7 +182,8 @@ function get_categories($con, $user_id) {
 }
 
 function get_appended_categories($con, $user_id, $object_id, $object_type) {
-    $table_name = mysqli_real_escape_string($con, $object_type) . "s_have_categories";
+    $q_table_name = mysqli_real_escape_string($con, $object_type) . "s_have_categories";
+    $q_object_id= mysqli_real_escape_string($con, $object_type) . "_id";
     $query = "
         select 
             c.id,
@@ -191,9 +192,10 @@ function get_appended_categories($con, $user_id, $object_id, $object_type) {
             c.text_color
         from 
             categories c 
-            inner join $table_name o on c.id = o.category_id
+            inner join $q_table_name o on c.id = o.category_id
         where
-            c.owner_id = ?;
+            c.owner_id = ? and
+            o.$q_object_id = ?;
     ";
     $stmt = mysqli_stmt_init($con);
 
@@ -204,7 +206,7 @@ function get_appended_categories($con, $user_id, $object_id, $object_type) {
         exit();
     }
 
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_bind_param($stmt, "ii", $user_id, $object_id);
 
     if(mysqli_stmt_execute($stmt)){
         $result = mysqli_stmt_get_result($stmt);
