@@ -29,7 +29,6 @@
                     <div class="content">
             ';
             foreach($rows as $row) {
-                $filename;
                 $source_image = 'images/file.png';
 
                 if(isset($row['extension'])) $filename = $row['name'] . '.' . $row['extension'];

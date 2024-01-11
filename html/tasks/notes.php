@@ -40,13 +40,22 @@
                     
                     $attached_files = get_attached_files_to_a_note ($con, $_SESSION['id'], $row['id']);
                     foreach($attached_files as $attached_file) {
+                        $source_image = 'images/file.png';
+        
+                        if(isset($attached_file['extension'])) $filename = $attached_file['name'] . '.' . $attached_file['extension'];
+                        else $filename = $attached_file['name'];
+                        
+                        if(in_array($attached_file['extension'], ['jpg', 'jpeg', 'png', 'gif', 'ico', 'webp'])) {
+                            $source_image = $attached_file['full_path'];
+                        }
+                        
                         echo '
                         <a style="display: flex; flex-direction: column;"
                             href="' . $attached_file['full_path'] . '" 
                             download="' . $attached_file['name'] . '.' . $attached_file['extension'] . '"
                         >' . 
                             $attached_file['name'] . '.' . $attached_file['extension'] .'
-                            <img src="' . $attached_file['full_path'] . '">
+                            <img src="' . $source_image . '">
                         </a>';
                     }
                     
