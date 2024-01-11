@@ -519,6 +519,59 @@ end;
 $$
 ------------------------------------------------------------------------------------------------------
 /*
+Delete a project.
+*/
+create or replace procedure p_delete_project (
+    in pi_project_id INT,
+    in pi_user_id INT
+)
+begin
+    declare is_owner boolean;
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE task_id INT;
+    DECLARE cur CURSOR FOR SELECT id FROM tasks WHERE project_id = pi_project_id;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    call p_check_privileges(pi_user_id, pi_project_id, 'o', 'project', is_owner);
+
+    if is_owner then
+        delete from
+            project_privileges
+        where 
+            project_id = pi_project_id;
+
+        delete from
+            projects_have_categories
+        where 
+            project_id = pi_project_id;
+
+        delete from 
+            projects_attach_notes
+        where
+            project_id = pi_project_id;
+        
+        OPEN cur;
+        read_loop: LOOP
+            FETCH cur INTO task_id;
+            IF done THEN
+              LEAVE read_loop;
+            END IF;
+            CALL p_delete_task(task_id, pi_user_id);
+        END LOOP read_loop;
+        CLOSE cur;
+
+
+        delete from 
+            projects 
+        where
+            id = pi_project_id;
+    else
+        signal sqlstate '45000' set message_text = 'user does not own the project!';
+    end if;
+end;
+$$
+------------------------------------------------------------------------------------------------------
+/*
 Delete a task.
 */
 create or replace procedure p_delete_task (

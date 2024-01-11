@@ -42,11 +42,11 @@ if(empty($categories)) {
 
 
 if($project_id == '-1'){
-    $project_id = create_project($con, $_SESSION['id'], $title, $description, $deadline, $category_id);
+    $project_id = create_project($con, $_SESSION['id'], $title, $description, $deadline);
     $status_message = urlencode("Успешно създаден проект!");    
     $page = "projects.php";
 } else {
-    edit_project($con, $_SESSION['id'], $title, $description, $category_id, $project_id);
+    edit_project($con, $_SESSION['id'], $title, $description, $deadline, $project_id);
     $status_message = urlencode("Успешно променен проект!");
     $page = "project_view.php";
 }
@@ -70,5 +70,5 @@ foreach($user_notes as $user_note) {
 }
 
 
-header("location: $page?id=$project_id&title=$title&description=$encoded_description&deadline=$deadline&status=$status_message");
+header("location: $page?id=$project_id&status=$status_message");
 exit();

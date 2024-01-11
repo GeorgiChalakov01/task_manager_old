@@ -8,24 +8,28 @@
     <body>
         <?php include 'common_php/body.php'?>
 
+        <a href="project_delete.inc.php?id=<?php echo $_GET['id']?>" class="controls link_button">❌</a>
         <a href="task_finish.php" class="controls link_button">Приключване</a>
+
         <?php 
-        echo '
-        <a href="project_edit.php?id=' . $_GET['id'] . '&title=' . $_GET['title'] . '&description=' . urlencode($_GET['description']) . '&deadline=' . $_GET['title'] . '" class="controls link_button">Промяна</a>';
-        ?>
-        
-        <br><br><br>
-
-        <?php include 'common_php/statuserror.php'?>
-
-        
-
-        <?php
         require_once '../db/dbh.inc.php';
         require_once 'common_php/functions.inc.php';
 
-
+        
         $project = get_project_info($con, $_SESSION['id'], $_GET['id'])[0];
+        
+        $title = $project['title'];
+        $description = $project['description'];
+        $deadline = $project['deadline'];
+
+        echo '
+        <a href="project_edit.php?id=' . $_GET['id'] . '&title=' . $title . '&description=' . urlencode($description) . '&deadline=' . urlencode($deadline) . '" class="controls link_button">📝</a><br><br><br>';
+
+
+        
+        include 'common_php/statuserror.php';
+
+        
         echo '<h1>' . $project['title'] . '</h1>';
         echo '<p>' . nl2br(urldecode($project['description'])) . '</p>';
         ?>

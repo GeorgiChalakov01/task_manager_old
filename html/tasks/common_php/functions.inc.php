@@ -821,7 +821,7 @@ function get_projects($con, $user_id) {
 }
 
 
-function create_project($con, $user_id, $title, $description, $deadline, $category_id) {
+function create_project($con, $user_id, $title, $description, $deadline) {
     $query = "CALL p_create_project(?, ?, ?, ?, @project_id);";
     $stmt = mysqli_stmt_init($con);
 
@@ -1145,6 +1145,33 @@ function delete_note($con, $note_id, $user_id) {
     else {
         $error_message = urlencode("Грешка: ");
         header("location: notes.php?error=$error_message" . urlencode(mysqli_stmt_error($stmt)));
+        exit();
+    }
+}
+
+function delete_project($con, $project_id, $user_id) {
+    $query = "call p_delete_project(?, ?);";
+    $stmt = mysqli_stmt_init($con);
+
+
+    if(!mysqli_stmt_prepare($stmt, $query)) {
+        $error_message = urlencode("Няма връзка с базата данни!");
+        header("location: projects.php?error=$error_message");
+        exit();
+    }
+
+    mysqli_stmt_bind_param($stmt, "ii", $project_id, $user_id);
+
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_close($stmt);
+
+        $status_message = urlencode("Успешно изтриване на проект!");
+        header("location: projects.php?status=$status_message");
+        exit();
+    }
+    else {
+        $error_message = urlencode("Грешка: ");
+        header("location: projects.php?error=$error_message" . urlencode(mysqli_stmt_error($stmt)));
         exit();
     }
 }

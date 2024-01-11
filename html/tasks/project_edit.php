@@ -55,7 +55,7 @@
                         value=
                             "<?php 
                             if(isset($_GET['deadline']))
-                                echo $_GET['deadline'];
+                                echo urldecode($_GET['deadline']);
                             ?>"
                     >
 
